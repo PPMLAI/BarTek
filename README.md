@@ -1,2 +1,1 @@
-# CARDLAI
-Aplikasi Pencatatan Mesin-Mesin Percetakan Lembaga Alkitab Indonesia
+Inventori Ruang Teknisi PPM LAI
