@@ -134,17 +134,113 @@ td{
     font-size: 14px;
     margin-top: 40px;
 }
+
+/* LOGIN */
+#loginScreen{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,#073b7a,#0b5ed7,#5aa9e6);
+  padding:20px;
+}
+.login-box{
+  width:min(420px,100%); background:#fff; border-radius:18px;
+  padding:30px; box-shadow:0 15px 45px rgba(0,0,0,.25);
+  text-align:center;
+}
+.login-box img{max-width:110px;height:auto;margin-bottom:12px}
+.login-box h2{color:#0b5ed7;margin-bottom:6px}
+.login-box p{color:#666;margin-bottom:22px;font-size:14px}
+.login-group{text-align:left;margin-bottom:14px}
+.login-group label{display:block;font-weight:bold;color:#333;margin-bottom:6px;font-size:14px}
+.login-group input{padding:12px;border:1px solid #cfd6df;border-radius:8px;font-size:15px}
+.login-btn{width:100%;margin-top:8px;border-radius:8px}
+.login-error{display:none;color:#dc3545;background:#fff0f1;border:1px solid #f3b4ba;padding:9px;border-radius:7px;margin-top:12px;font-size:13px}
+#appContent{display:none}
+.logout-btn{background:#dc3545;margin-top:0;padding:9px 16px;font-size:13px}
+.logout-btn:hover{background:#b02a37}
+.header-actions{position:absolute;right:18px;top:18px}
+@media(max-width:600px){
+  .header-actions{position:static;margin-top:5px}
+}
+
+
+/* HEADER REALTIME */
+.header-clock{
+  width:100%;
+  max-width:900px;
+  margin-top:2px;
+  padding:12px 16px;
+  border-radius:12px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(5px);
+}
+.header-greeting{
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+.header-date{
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:7px;
+}
+.header-motivation{
+  font-size:14px;
+  line-height:1.5;
+  font-style:italic;
+}
+@media(max-width:600px){
+  .header-greeting{font-size:17px}
+  .header-date{font-size:13px}
+  .header-motivation{font-size:12px}
+}
+
 </style>
 
 </head>
 
 <body>
 
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="logo-ppm.png" alt="Logo PPM LAI" onerror="this.style.display='none'">
+    <h2>Login PPM LAI</h2>
+    <p>Silakan masuk untuk mengakses Stock Barang Ruang Teknisi</p>
+
+    <div class="login-group">
+      <label for="loginUsername">Username</label>
+      <input id="loginUsername" type="text" autocomplete="username" placeholder="Masukkan username">
+    </div>
+
+    <div class="login-group">
+      <label for="loginPassword">Password</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Masukkan password"
+             onkeydown="if(event.key==='Enter') login()">
+    </div>
+
+    <button class="login-btn" onclick="login()">Login</button>
+    <div id="loginError" class="login-error">Username atau password salah.</div>
+  </div>
+</div>
+
+<div id="appContent">
 <div class="container">
 
-<div class="header">
+<div class="header" style="position:relative;">
     <img src="logo-ppm.png" alt="Logo PPM LAI">
     <h2>Stock Barang Ruang Teknisi PPM LAI</h2>
+
+    <div class="header-clock">
+      <div id="sapaanWaktu" class="header-greeting">Selamat Pagi kepada Teknisi PPM LAI</div>
+      <div id="tanggalWaktu" class="header-date">-</div>
+      <div id="motivasiKerja" class="header-motivation">-</div>
+    </div>
+
+    <div class="header-actions">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 </div>
 
 <div class="form">
@@ -216,12 +312,144 @@ td{
 </table>
 
 </div>
+</div>
 
 <div class="footer">
     &copy; 2026 GUSPUR - Barang Teknisi
 </div>
 
 <script>
+
+// ================= LOGIN =================
+// Ganti username/password di bawah sesuai kebutuhan.
+// Catatan: karena ini HTML saja, kredensial ini dapat dilihat dari source browser.
+// Untuk keamanan sebenarnya, validasi login sebaiknya dilakukan di Apps Script/server.
+const LOGIN_USERNAME = "admin";
+const LOGIN_PASSWORD = "admin123";
+
+function login(){
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const error = document.getElementById("loginError");
+
+  if(username === LOGIN_USERNAME && password === LOGIN_PASSWORD){
+    sessionStorage.setItem("ppm_lai_login", "true");
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    error.style.display = "none";
+    loadData();
+  }else{
+    error.style.display = "block";
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("loginPassword").focus();
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem("ppm_lai_login");
+  document.getElementById("appContent").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("loginUsername").value = "";
+  document.getElementById("loginPassword").value = "";
+  document.getElementById("loginError").style.display = "none";
+}
+
+function cekLogin(){
+  if(sessionStorage.getItem("ppm_lai_login") === "true"){
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    loadData();
+  }else{
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("appContent").style.display = "none";
+  }
+}
+
+
+// ================= HEADER REALTIME INDONESIA =================
+const MOTIVASI_KERJA = [
+  "Kerjakan setiap tugas dengan teliti, karena kualitas dimulai dari hal-hal kecil.",
+  "Keselamatan kerja adalah prioritas. Bekerja aman, bekerja cerdas, pulang dengan selamat.",
+  "Teknisi yang baik bukan hanya memperbaiki kerusakan, tetapi juga mencegahnya terjadi kembali.",
+  "Disiplin dalam pemeliharaan hari ini membantu menjaga keandalan mesin untuk esok hari.",
+  "Masalah teknis adalah kesempatan untuk belajar, berinovasi, dan menjadi lebih baik.",
+  "Kerja sama tim membuat pekerjaan lebih ringan dan hasil lebih kuat.",
+  "Ketelitian, tanggung jawab, dan konsistensi adalah bagian dari profesionalisme teknisi.",
+  "Rawat mesin dengan baik, maka mesin akan membantu menjaga kelancaran produksi.",
+  "Jangan menunda pekerjaan pemeliharaan. Pencegahan selalu lebih baik daripada perbaikan.",
+  "Setiap pekerjaan yang dilakukan dengan benar memberikan kontribusi bagi keberhasilan tim PPM LAI.",
+  "Terus belajar teknologi baru dan tingkatkan kemampuan untuk menghadapi tantangan teknis.",
+  "Bekerjalah dengan hati, disiplin, dan tanggung jawab untuk memberikan hasil terbaik."
+];
+
+let motivasiTerakhir = -1;
+
+function ambilMotivasiAcak(){
+  let index;
+  do {
+    index = Math.floor(Math.random() * MOTIVASI_KERJA.length);
+  } while(MOTIVASI_KERJA.length > 1 && index === motivasiTerakhir);
+
+  motivasiTerakhir = index;
+  return MOTIVASI_KERJA[index];
+}
+
+function updateHeaderRealtime(){
+  // Asia/Jakarta = WIB, realtime mengikuti waktu Indonesia bagian barat.
+  const now = new Date();
+
+  const jam = Number(new Intl.DateTimeFormat("id-ID", {
+    timeZone:"Asia/Jakarta",
+    hour:"numeric",
+    hour12:false
+  }).format(now));
+
+  let sapaan;
+  if(jam >= 4 && jam < 11){
+    sapaan = "Selamat Pagi";
+  }else if(jam >= 11 && jam < 15){
+    sapaan = "Selamat Siang";
+  }else if(jam >= 15 && jam < 18){
+    sapaan = "Selamat Sore";
+  }else{
+    sapaan = "Selamat Malam";
+  }
+
+  const tanggal = new Intl.DateTimeFormat("id-ID", {
+    timeZone:"Asia/Jakarta",
+    weekday:"long",
+    day:"2-digit",
+    month:"long",
+    year:"numeric",
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:false
+  }).format(now);
+
+  document.getElementById("sapaanWaktu").textContent =
+    `${sapaan} kepada Teknisi PPM LAI`;
+
+  document.getElementById("tanggalWaktu").textContent =
+    `${tanggal} WIB`;
+}
+
+function mulaiHeaderRealtime(){
+  document.getElementById("motivasiKerja").textContent =
+    "💡 " + ambilMotivasiAcak();
+
+  updateHeaderRealtime();
+
+  // Jam/tanggal diperbarui setiap 1 detik.
+  setInterval(updateHeaderRealtime, 1000);
+
+  // Motivasi berganti secara otomatis setiap 30 menit.
+  setInterval(function(){
+    document.getElementById("motivasiKerja").textContent =
+      "💡 " + ambilMotivasiAcak();
+  }, 30 * 60 * 1000);
+}
+
 const API_URL="https://script.google.com/macros/s/AKfycbynKH0xyqe8_7QwIObrtWL6Xh6oYvfkLgzwoK_KfbKXWoGu6hHhjoyhl7gHY9G2k7sn/exec";
 
 let data=[];
@@ -405,7 +633,8 @@ function filterData(){
     });
 }
 
-loadData();
+cekLogin();
+mulaiHeaderRealtime();
 </script>
 
 </body>
